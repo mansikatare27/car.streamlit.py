@@ -1,34 +1,26 @@
-import streamlit as st
 import pandas as pd
 import seaborn as sb
 import matplotlib.pyplot as plt
+import streamlit as st
 
-# Load dataset
-@st.cache_data
-def load_data():
-    df = pd.read_csv("cars.csv")
-    return df
+st.title("Car Horsepower Viewer by Brand")
 
-df = load_data()
+# Load the dataset with error handling
+try:
+    df = pd.read_csv("CARS.csv")
+except FileNotFoundError:
+    st.error("❌ Error: The file 'Cars.csv' was not found. Please make sure it is in the same folder as this script.")
+    st.stop()
 
-st.title("Car Brand Horsepower Visualization")
-
-# Show the unique car brands
-brands = df['Make'].unique()
-selected_brand = st.selectbox("Select a Car Brand", sorted(brands))
-
-# Filter the DataFrame for the selected brand
+brands = sorted(df['Make'].dropna().unique())
+selected_brand = st.selectbox("Enter Brand Name:", brands)
 filtered_df = df[df['Make'] == selected_brand]
 
-# Check if there are any records for the selected brand
-if filtered_df.empty:
-    st.warning("No data available for the selected brand.")
-else:
-    # Create a barplot using Seaborn
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(data=filtered_df, x="Make", y="Horsepower", ax=ax)
-    ax.set_title(f"Horsepower of {selected_brand} Cars")
-    ax.set_xlabel("Brand")
-    ax.set_ylabel("Horsepower")
-    plt.xticks(rotation=90)
-    st.pyplot(fig)
+st.write(f"Filtered data for **{selected_brand}**:")
+st.write(filtered_df)
+
+fig, ax = plt.subplots(figsize=(8, 5))
+sb.barplot(x=filtered_df.Make, y=filtered_df.Horsepower, ax=ax)
+plt.xticks(rotation=90)
+ax.set_title(f"Horsepower for {selected_brand}")
+st.pyplot(fig)
